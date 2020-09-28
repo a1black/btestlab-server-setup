@@ -1,0 +1,17 @@
+# Disable systemd-resolve
+sudo systemctl stop systemd-resolved.service
+sudo systemctl disable systemd-resolved.service
+
+# Kill listener on 127.0.0.53:53
+for pid in $(ps -C systemd-resolve -o pid=); do
+    sudo kill -9 $pid &> /dev/null
+done;
+
+# Refer resolv.conf to local dns server.
+sudo sed -iE '/^nameserver[[:space:]]+[[:digit:]]+(\.[[:digit:]]+){3}/d ; $a nameserver 127.0.0.1' /etc/resolv.conf
+
+# Make dnsmasq main local DNS forwarder and cache server
+sudo apt-get install dnsmasq
+
+sudo systemctl enable dnsmasq
+sudo systemctl start dnsmasq
